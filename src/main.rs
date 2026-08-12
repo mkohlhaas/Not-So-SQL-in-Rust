@@ -60,14 +60,14 @@ fn main() {
     filesystem.delete_rows("users", |row| {
         row.data
             .get("age")
-            .map_or(false, |age| age.parse::<i32>().unwrap_or(0) > 30)
+            .is_some_and(|age| age.parse::<i32>().unwrap_or(0) > 30)
     });
 
     // Update rows where id = 1
     let mut updates = HashMap::new();
     updates.insert("name".to_string(), "Updated Alice".to_string());
     let res = filesystem.update_rows("users", updates, |row| {
-        row.data.get("id").map_or(false, |id| id == "1")
+        row.data.get("id").is_some_and(|id| id == "1")
     });
     println!("res: {:?}", res);
 

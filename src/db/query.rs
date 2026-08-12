@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use super::parser::ASTNode;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
@@ -9,13 +11,11 @@ impl From<String> for Identifier {
     }
 }
 
-
 #[derive(Debug)]
 pub struct QueryPlan {
     pub projection: Vec<Identifier>,
     pub table: Identifier,
 }
-
 
 pub struct QueryPlanner {}
 
@@ -34,3 +34,4 @@ impl QueryPlanner {
         }
     }
 }
+

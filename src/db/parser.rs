@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use super::{query::Identifier, schema::Row};
 use nom::{
     branch::alt,

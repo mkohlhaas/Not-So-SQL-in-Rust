@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use std::collections::HashMap;
 
 use super::{parser::ASTNode, query::Identifier, schema::Row, storage_engine::FileSystem};
@@ -86,7 +88,7 @@ impl<'a> QueryExecutor<'a> {
         self.filesystem.delete_rows(&table.0, |row| {
             row.data
                 .get("age")
-                .map_or(false, |age| age.parse::<i32>().unwrap_or(0) > 30)
+                .is_some_and(|age| age.parse::<i32>().unwrap_or(0) > 30)
         });
     }
 }

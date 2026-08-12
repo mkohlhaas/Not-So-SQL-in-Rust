@@ -1,4 +1,3 @@
-use super::executor::ExecutionError;
 use super::query::Identifier;
 use super::schema::{Row, Table};
 use serde::{Deserialize, Serialize};

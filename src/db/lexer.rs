@@ -1,8 +1,9 @@
+#![allow(unused)]
+
 use std::iter::Peekable;
 use std::str::Chars;
 
 use super::parser::Token;
-
 
 #[derive(Debug)]
 pub struct Lexer<'a> {
@@ -49,11 +50,11 @@ impl<'a> Lexer<'a> {
                     Some(Token::Identifier(identifier))
                 }
             }
-            Some(c) if c.is_digit(10) => {
+            Some(c) if c.is_ascii_digit() => {
                 let mut literal = String::new();
                 literal.push(c);
                 while let Some(&next) = chars.peek() {
-                    if next.is_digit(10) {
+                    if next.is_ascii_digit() {
                         literal.push(next);
                         chars.next();
                     } else {
@@ -67,7 +68,6 @@ impl<'a> Lexer<'a> {
         }
     }
 }
-
 
 pub struct Tokenizer;
 
@@ -139,3 +139,4 @@ impl Tokenizer {
         tokens
     }
 }
+
