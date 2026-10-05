@@ -54,8 +54,8 @@ impl<'a> QueryExecutor<'a> {
             .get(&table.0)
             .ok_or(ExecutionError::TableNotFound)?;
         // println!("rows {:?} and projection: {:?}", table.rows, &projection);
-        let mut result = Vec::new();
 
+        let mut result = Vec::new();
         for row in table.rows.values() {
             let mut row_data = HashMap::new();
             for column in &projection {

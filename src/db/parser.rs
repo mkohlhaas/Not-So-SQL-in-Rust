@@ -93,7 +93,7 @@ impl<'a> Parser {
         )(input)
     }
 
-    fn select_statement(input: &'a str) -> IResult<&str, ASTNode> {
+    fn select_statement(input: &'a str) -> IResult<&'a str, ASTNode> {
         let (input, _) = tag("SELECT")(input)?; // Parse SELECT keyword
         let (input, _) = multispace1(input)?; // Parse space after SELECT
         let (input, projection) = alt((
@@ -114,7 +114,7 @@ impl<'a> Parser {
         Ok((input, ASTNode::SelectStatement { projection, table }))
     }
 
-    fn delete_statement(input: &'a str) -> IResult<&str, ASTNode> {
+    fn delete_statement(input: &'a str) -> IResult<&'a str, ASTNode> {
         let (input, _) = tag("DELETE")(input)?; // Match "DELETE"
         let (input, _) = multispace1(input)?; // Match spaces
         let (input, _) = tag("FROM")(input)?; // Match "FROM"
@@ -142,7 +142,7 @@ impl<'a> Parser {
         ))
     }
 
-    fn update_statement(input: &'a str) -> IResult<&str, ASTNode> {
+    fn update_statement(input: &'a str) -> IResult<&'a str, ASTNode> {
         let (input, _) = tag("UPDATE")(input)?; // Match "UPDATE"
         let (input, _) = multispace1(input)?; // Match spaces
         let (input, table) = Parser::identifier(input)?; // Parse table name

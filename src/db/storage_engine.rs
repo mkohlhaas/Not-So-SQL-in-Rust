@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use super::query::Identifier;
 use super::schema::{Row, Table};
 use serde::{Deserialize, Serialize};
@@ -8,12 +10,19 @@ use std::{
     path::Path,
 };
 
+// ============================= //
+// The StorageEngine (in memory) //
+// ============================= //
+
+// StorageEngine is just a wrapper around a HashMap
+
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct StorageEngine {
     pub tables: HashMap<String, Table>,
 }
 
 impl StorageEngine {
+    // create new StorageEngine in memory
     pub fn new() -> Self {
         StorageEngine {
             tables: HashMap::new(),
@@ -39,6 +48,7 @@ impl StorageEngine {
     where
         F: Fn(&Row) -> bool,
     {
+        // check PK is unique
         if let Some(table) = self.tables.get_mut(table_name) {
             if let Some(pk) = &table.primary_key {
                 if let Some(new_pk_value) = updates.get(pk) {
@@ -69,6 +79,7 @@ impl StorageEngine {
     }
 
     pub fn create_table(&mut self, name: &str, columns: Vec<String>, primary_key: Option<&str>) {
+        // check PK is a valid column name
         if let Some(pk) = primary_key {
             if !columns.contains(&pk.to_string()) {
                 panic!("Primary key '{}' must be one of the table columns", pk);
@@ -86,8 +97,9 @@ impl StorageEngine {
     }
 
     pub fn insert_row(&mut self, table_name: &str, row: Row) -> Result<(), String> {
+        // table must exist
         if let Some(table) = self.tables.get_mut(table_name) {
-            // Validate uniqueness for the primary key
+            // PK must be unique
             if let Some(pk) = &table.primary_key {
                 if let Some(pk_value) = row.data.get(pk) {
                     if table
@@ -105,6 +117,7 @@ impl StorageEngine {
                 }
             }
 
+            // create new row_id
             let row_id = table.rows.len();
             table.rows.insert(row_id, row);
             Ok(())
@@ -113,16 +126,22 @@ impl StorageEngine {
         }
     }
 
+    // save to buffer
     pub fn serialize(&self, buffer: &mut Vec<u8>) -> Result<(), std::io::Error> {
         buffer.clear();
         buffer.extend(bincode::serialize(self).unwrap());
         Ok(())
     }
 
+    // load from buffer
     pub fn deserialize(buffer: &[u8]) -> Result<Self, std::io::Error> {
         Ok(bincode::deserialize(buffer).unwrap())
     }
 }
+
+// ==================== //
+// The Physical Storage //
+// ==================== //
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct FileSystem {
@@ -138,7 +157,7 @@ impl FileSystem {
         }
         FileSystem {
             storage_engine,
-            file_path: file_path.to_string(),
+            file_path: file_path.into(),
         }
     }
 
@@ -149,9 +168,9 @@ impl FileSystem {
 
     pub fn insert_row(&mut self, table_name: &str, row: Row) -> Result<(), std::io::Error> {
         match self.storage_engine.insert_row(table_name, row) {
-            Ok(_) => return self.save_to_file(),
-            Err(e) => return Err(Error::new(ErrorKind::Interrupted, e)),
-        };
+            Ok(_) => self.save_to_file(),
+            Err(e) => Err(Error::new(ErrorKind::Interrupted, e)),
+        }
     }
 
     fn save_to_file(&self) -> Result<(), std::io::Error> {
@@ -220,11 +239,10 @@ impl FileSystem {
         {
             Ok(()) => {
                 self.save_to_file().unwrap();
-                let mut res: Vec<Row> = vec![];
-                res.push(Row { data: updates });
-                return Ok(res);
+                let mut res: Vec<Row> = vec![Row { data: updates }];
+                Ok(res)
             }
-            Err(e) => return Err(e.to_string()),
-        };
+            Err(e) => Err(e.to_string()),
+        }
     }
 }
